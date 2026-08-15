@@ -6,12 +6,6 @@ from cryptography.hazmat.primitives import hashes as crypt_hashes
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 import os
 from django.core.files.storage import default_storage
-from django.conf import settings
-import uuid
-
-BASE_DIR = settings.BASE_DIR
-
-print('BASE_DIR', BASE_DIR)
 
 
 # --- CONSTANT KEY SEEDS ---
@@ -57,7 +51,6 @@ def generate_aes_key():
     return os.urandom(32)
 
 def encrypt_file_with_aes(file_path, aes_key):
-    unique_id = uuid.uuid4().hex[:8]
     print('yyyyyyyyyyyyyyy')
     try:
         # Open the file using default_storage to read it correctly
@@ -73,7 +66,7 @@ def encrypt_file_with_aes(file_path, aes_key):
     pad_length = 16 - len(file_data) % 16
     padded_data = file_data + bytes([pad_length] * pad_length)
     encrypted_data = encryptor.update(padded_data) + encryptor.finalize()
-    encrypted_file_path = f'{BASE_DIR}/uploads/enc_files/{unique_id}.enc'
+    encrypted_file_path = file_path + ".enc"
     with open(encrypted_file_path, 'wb') as enc_file:
         enc_file.write(iv + encrypted_data)
     print(f"File encrypted with AES: {encrypted_file_path}")

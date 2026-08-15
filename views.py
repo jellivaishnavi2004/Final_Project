@@ -23,6 +23,7 @@ from django.conf import settings
 # Create your views here.
 
 def register(request):
+    
     if request.method == 'POST':
         firstName = request.POST.get('firstName')
         lastName = request.POST.get('lastName')
@@ -156,34 +157,39 @@ def upload_file(request):
                     file_path = f"{upload_dir}/{safe_filename}"
                     saved_path = default_storage.save(file_path, ContentFile(file_content))
 
+                    print(file_path)
+
                     print('ooooooooooooooooooooooooooooooooooooooooooo')
 
                     private_key, public_key, rsa_private_key, rsa_public_key = load_constant_keys()
                     signature = sign_message(private_key, file_path)
                     aes_key = generate_aes_key()
                     print(aes_key) 
-                    encrypt_file_with_aes(file_path, aes_key)
+                    enc_path = encrypt_file_with_aes(file_path, aes_key)
                     
                     # Create database record
-                    uploaded_file = UploadedFile.objects.create(
+                    uploaded_files = UploadedFile.objects.create(
                         user=request.user,
                         original_name=file.name,
                         saved_name=safe_filename,
                         file_path=saved_path,
                         file_size=len(file_content),
                         category=category,
-                        uploaded_at=timezone.now()
+                        uploaded_at=timezone.now(),
+                        encrypted_file = enc_path
                     )
 
+                    # Heisenberg group operations
+                    print('ddddddddddddddd')
                     file_data = {
-                        'id': str(uploaded_file.id),
-                        'original_name': uploaded_file.original_name,
-                        'saved_name': uploaded_file.saved_name,
-                        'file_path': uploaded_file.file_path,
-                        'file_size': uploaded_file.file_size,
-                        'category': uploaded_file.category,
-                        'uploaded_at': uploaded_file.uploaded_at.isoformat(),
-                        'formatted_size': uploaded_file.formatted_size
+                        'id': str(uploaded_files.id),
+                        'original_name': uploaded_files.original_name,
+                        'saved_name': uploaded_files.saved_name,
+                        'file_path': uploaded_files.file_path,
+                        'file_size': uploaded_files.file_size,
+                        'category': uploaded_files.category,
+                        'uploaded_at': uploaded_files.uploaded_at.isoformat(),
+                        'formatted_size': uploaded_files.formatted_size
                     }
 
                     print(file_data)
